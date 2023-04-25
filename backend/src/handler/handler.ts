@@ -1,8 +1,8 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ServerResponse } from "http";
 import * as dotenv from "dotenv";
 
-import { BAD_REQUEST_MESSAGE, INTERNAL_SERVER_ERROR_MESSAGE } from "../constants";
+import { BAD_REQUEST_MESSAGE, INTERNAL_SERVER_ERROR_MESSAGE, BAD_REQUEST_MESSAGE_BAD_ZIP } from "../constants";
 import { TServerRequest, ILatLongPair } from "../types";
 
 import { extractZip } from "./helpers";
@@ -25,9 +25,20 @@ import { IPointEndpointResponse } from "../nws/types";
 dotenv.config();
 
 const responseHeaders = { "Content-Type": "text/html" };
+const nws_headers = {
+  headers: {
+    // Weather API requests User-Agent headers to be set.
+    "User-Agent": `gregoryrpitts@crossnokaye`,
+  },
+};
 
 const serverFunction = async (req: TServerRequest, res: ServerResponse): Promise<void> => {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
+  res.setHeader("Access-Control-Max-Age", 2592000); // 30 days
+
   if (!isUrlGood(req.url)) {
+    console.log("Failing because URL is no good.");
     res.writeHead(404, BAD_REQUEST_MESSAGE, responseHeaders);
     res.end();
     return;
@@ -38,8 +49,9 @@ const serverFunction = async (req: TServerRequest, res: ServerResponse): Promise
   const mapBoxResponse: AxiosResponse<IMapBoxForwardGeocodeResponse> = await axios.get(makeApiEndpointMapbox(extractZip(req.url)));
 
   // If the geocode fails, return the user a 500 error message.
-  // TODO: more specific information about error logging can be logged to internal service, i.e. Datadog.
   if (mapBoxResponse.status !== 200) {
+    // TODO: more specific information about error logging can be logged to internal service, i.e. Datadog.
+    console.log("Failing because bad request to Map Box URL.");
     res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
     res.end();
     return;
@@ -48,14 +60,16 @@ const serverFunction = async (req: TServerRequest, res: ServerResponse): Promise
   // Parsing external data, use a try catch in case the 3rd party changes their API signature.
   const latLongPair: ILatLongPair | undefined = extractCoordinatesMapbox(mapBoxResponse.data);
   if (!latLongPair) {
-    res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
+    res.writeHead(404, BAD_REQUEST_MESSAGE_BAD_ZIP, responseHeaders);
     res.end();
     return;
   }
+  console.log(mapBoxResponse.data);
 
   // We need to get information about the Forecast Station in order to get the actual forecast.
-  const nwsGetPointResponse: AxiosResponse<IPointEndpointResponse> = await axios.get(makeNwsPointEndpoint(latLongPair));
+  const nwsGetPointResponse: AxiosResponse<IPointEndpointResponse> = await axios.get(makeNwsPointEndpoint(latLongPair), nws_headers);
   if (nwsGetPointResponse.status !== 200) {
+    console.log("Failing because failed first request to NWS.");
     res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
     res.end();
     return;
@@ -64,21 +78,29 @@ const serverFunction = async (req: TServerRequest, res: ServerResponse): Promise
   // Parse the external data with a helper function.
   const gridPointData: IGridPointData = getForecastOfficeInfo(nwsGetPointResponse.data);
   if (!gridPointData) {
+    console.log("Failing because return from NWS was bad.");
     res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
     res.end();
     return;
   }
 
   // Finally we can get the actual forecast.
-  const nwsForecastResponse: AxiosResponse<IForecastResponse> = await axios.get(makeNwsForecastPointEndpoint(gridPointData));
-  if (nwsForecastResponse.status !== 200) {
+  const nwsForecastResponse: AxiosResponse<IForecastResponse> = await axios.get(makeNwsForecastPointEndpoint(gridPointData), nws_headers);
+  // .catch((err: AxiosError) => {
+  //   // TODO: Log this to our own internal server.
+  //   console.log(err);
+  //   return err;
+  // });
+  if (nwsForecastResponse.status !== 200 || !(nwsForecastResponse as AxiosResponse<IForecastResponse>).data) {
+    console.log("Failing because second request to NWS.");
     res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
     res.end();
     return;
   }
 
   // One more validation check to make sure we have the data we need.
-  if (!validateForcastInformation(nwsForecastResponse.data)) {
+  if (!validateForcastInformation((nwsForecastResponse as AxiosResponse<IForecastResponse>).data)) {
+    console.log("Failing because erro validation before response.");
     res.writeHead(500, INTERNAL_SERVER_ERROR_MESSAGE, responseHeaders);
     res.end();
     return;
@@ -86,7 +108,7 @@ const serverFunction = async (req: TServerRequest, res: ServerResponse): Promise
 
   // We are home free. Write the relevant response and return.
   res.writeHead(200, { "Content-Type": "text/html" });
-  res.end(JSON.stringify(pruneData(nwsForecastResponse.data)));
+  res.end(JSON.stringify(pruneData((nwsForecastResponse as AxiosResponse<IForecastResponse>).data)));
 };
 
 export default serverFunction;

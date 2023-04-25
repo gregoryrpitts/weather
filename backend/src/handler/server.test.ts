@@ -4,7 +4,7 @@ import { describe, beforeEach, expect, test } from "@jest/globals";
 import { ServerResponse } from "http";
 import { createResponse, MockResponse } from "node-mocks-http";
 
-import { BAD_REQUEST_MESSAGE, OK_MESSAGE, INTERNAL_SERVER_ERROR_MESSAGE } from "../constants";
+import { BAD_REQUEST_MESSAGE, OK_MESSAGE, BAD_REQUEST_MESSAGE_BAD_ZIP, INTERNAL_SERVER_ERROR_MESSAGE } from "../constants";
 import { URL_REGEX } from "../constants";
 
 import { extractZip } from "./helpers";
@@ -71,27 +71,14 @@ describe("Reverse Proxy test", () => {
     mockAxiosGetSpy.mockResolvedValueOnce({
       status: 200,
       data: {
-        version: "nextVersion",
+        features: [],
       },
     });
 
     await serverFunction({ url: GOOD_REQUEST }, res);
-    expect(res.statusCode).toBe(500);
-    expect(res.statusMessage).toBe(INTERNAL_SERVER_ERROR_MESSAGE);
+    expect(res.statusCode).toBe(404);
+    expect(res.statusMessage).toBe(BAD_REQUEST_MESSAGE_BAD_ZIP);
     expect(axios.get).toBeCalledTimes(1);
-  });
-
-  test("Check reverse proxy returns 500 when MapBox API signature changes.", async () => {
-    mockAxiosGetSpy.mockResolvedValueOnce({
-      status: 200,
-      data: {
-        version: "nextVersion",
-      },
-    });
-
-    await serverFunction({ url: GOOD_REQUEST }, res);
-    expect(res.statusCode).toBe(500);
-    expect(res.statusMessage).toBe(INTERNAL_SERVER_ERROR_MESSAGE);
   });
 
   test("Check reverse proxy returns 500 when MapBox API passed but NWS fails.", async () => {

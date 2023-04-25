@@ -1,6 +1,7 @@
 import { URL_REGEX } from "../constants";
 import { IForecastResponse } from "../nws/types";
 import { IForecastPeriod } from "../nws/types";
+import { IForecastHourlyResponse } from "../nws/types";
 
 export const isUrlGood = (url: string): boolean => {
   return URL_REGEX.test(url);
@@ -12,14 +13,14 @@ export const extractZip = (url: string): string => {
 
 export const pruneData = (data: IForecastResponse): IForecastPeriod[] => {
   return (data.properties?.periods || [])
-    .map((period: IForecastPeriod) => {
+    .map((period: IForecastHourlyResponse) => {
       return {
-        endTime: period.endTime,
+        endTime: new Date(period.endTime).toISOString(),
         icon: period.icon,
         shortForecast: period.shortForecast,
-        startTime: period.startTime,
+        startTime: period.startTime, //new Date(period.startTime).toISOString(),
         temperature: period.temperature,
-        temperatureUnit: period.temperatureUnit,
+        startTimeZone: period.startTime.slice(-6),
         windSpeed: period.windSpeed,
         windDirection: period.windDirection,
       };

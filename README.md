@@ -86,3 +86,7 @@ Frontend will be create-react-app. I'll use a MUI React Component Library to hel
 ## Implementation
 
 First I created the node server. It's just a reverse proxy that handles request and makes a sequence of web requests to gather the data. It turns out we needed three requests to service the data, but I decided against caching certain information to limit the scope of this assignment.
+
+### Frontend
+create-react-app with a Typescript template is the starting point. I added Material UI component library because I'm deeply familiar with it and it would allow me to build a responsive design quickly.
+

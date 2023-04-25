@@ -1,36 +1,4 @@
-export interface IPointEndpointResponse {
-  properties: IGridPointData;
-}
-
-export interface IGridPointData {
-  cwa: string;
-  gridX: number;
-  gridY: number;
-}
-
-export interface IForecastPeriod {
-  endTime: string;
-  icon: string;
-  shortForecast: string;
-  startTime: string;
-  temperature: number;
-  windDirection: string;
-  windSpeed: string;
-}
-
-export interface IForecastResponse {
-  properties: {
-    forecastGenerator: string;
-    generatedAt: string;
-    periods: IForecastPeriod[];
-    units: string;
-    updated: string;
-    updateTime: string;
-    validTimes: string;
-  };
-}
-
-export interface IForecastHourlyResponse {
+export interface IWeatherByHour {
   /**
    * The end time of this period, in ISO8601 format.
    */
@@ -64,3 +32,5 @@ export interface IForecastHourlyResponse {
    */
   windDirection: string;
 }
+
+export type IWeatherResponse = IWeatherByHour[];
