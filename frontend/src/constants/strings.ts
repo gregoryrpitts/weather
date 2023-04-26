@@ -6,7 +6,7 @@
  */
 
 const strings = {
-  APP_TITLE: "Weather",
+  APP_TITLE: "Weather App",
   COPIED: "Copied!",
   ERROR_FETCH: "Error fetching weather data.",
   SEARCH_BY_ZIP: "Search by Zip",

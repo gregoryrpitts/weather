@@ -1,3 +1,5 @@
+import * as React from "react";
+
 import wrapSvgPath from "./WrapSvgPath";
 
 const sunshinePath = (
