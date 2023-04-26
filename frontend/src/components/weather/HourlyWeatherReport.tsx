@@ -1,7 +1,6 @@
 import * as React from "react";
 import { DateTime } from "luxon";
 
-import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 
 import HourlyWeatherTile from "components/weather/HourlyWeatherTile";
@@ -40,33 +39,31 @@ const HourlyWeatherReport: React.FunctionComponent<IWeatherReportProps> = ({ wea
   const titleDateTime = DateTime.fromISO(weather[0].startTime, { setZone: true });
   const comparisionString = titleDateTime.toFormat("m:dd");
   return (
-    <Container maxWidth={"md"}>
-      <Grid container direction={"row"} spacing={1}>
-        <Grid item>
-          <Grid container direction={"row"} spacing={1}>
-            <Grid item xs={6}>
-              <Typography variant={"h4"}>{`${STRINGS.WEATHER_REPORT_TITLE}`}</Typography>
-            </Grid>
-          </Grid>
+    // <Grid container direction={"column"} spacing={1}>
+    //   <Grid item>
+    //     <Grid container direction={"row"} spacing={1}>
+    //       <Grid item xs={6}>
+    //         <Typography variant={"h4"}>{`${STRINGS.WEATHER_REPORT_TITLE}`}</Typography>
+    //       </Grid>
+    //     </Grid>
+    //   </Grid>
+    //   <Grid item>
+        <Grid container direction={"column"} spacing={1}>
+          <DateRow date={titleDateTime} />
+          {weather.map((hourlyWeather: IWeatherByHour) => {
+            const hourlyStartTime = DateTime.fromISO(hourlyWeather.startTime, { setZone: true });
+            return (
+              <React.Fragment>
+                {isRolloverHour(comparisionString, hourlyStartTime) && <DateRow date={hourlyStartTime} />}
+                <Grid item>
+                  <HourlyWeatherTile weather={hourlyWeather} />
+                </Grid>
+              </React.Fragment>
+            );
+          })}
         </Grid>
-        <Grid item>
-          <Grid container direction={"column"} spacing={1}>
-            <DateRow date={titleDateTime} />
-            {weather.map((hourlyWeather: IWeatherByHour) => {
-              const hourlyStartTime = DateTime.fromISO(hourlyWeather.startTime, { setZone: true });
-              return (
-                <React.Fragment>
-                  {isRolloverHour(comparisionString, hourlyStartTime) && <DateRow date={hourlyStartTime} />}
-                  <Grid item>
-                    <HourlyWeatherTile weather={hourlyWeather} />
-                  </Grid>
-                </React.Fragment>
-              );
-            })}
-          </Grid>
-        </Grid>
-      </Grid>
-    </Container>
+      // </Grid>
+    // </Grid>
   );
 };
 

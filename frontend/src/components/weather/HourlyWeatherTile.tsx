@@ -18,7 +18,7 @@ const HourlyWeatherTile: React.FunctionComponent<IHourlyWeatherTileProps> = ({ w
         <Grid item xs={1}>
           <img src={weather.icon.replace(/,[0-9]*/, "")} alt={weather.shortForecast} style={{ borderRadius: "50px" }} />
         </Grid>
-        <Grid item xs>
+        <Grid item xs={6}>
           {weather.shortForecast}
         </Grid>
         <Grid item xs={2}>
