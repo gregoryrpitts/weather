@@ -7,7 +7,7 @@ interface IPageLayoutProps {
 }
 
 const PageWrapper: React.FunctionComponent<IPageLayoutProps> = ({ children }): React.ReactElement => {
-  return <Box sx={{ margin: 1, flexGrow: 1, border: "1px dashed purple" }}>{children}</Box>;
+  return <Box sx={{ margin: 1, flexGrow: 1 }}>{children}</Box>;
 };
 
 export default PageWrapper;

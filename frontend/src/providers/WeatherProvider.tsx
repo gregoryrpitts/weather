@@ -1,19 +1,56 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 
+import STRINGS from "constants/strings";
+
+import { loadState } from "services/localStorage";
+import { removeState } from "services/localStorage";
+import { saveState } from "services/localStorage";
 import { IUseWeather } from "services/weather";
 import useWeather from "services/weather";
+
 import { IWeatherResponse } from "types/weather";
+import { UNIT_KEY } from "services/localStorage/keys";
+import { ZIP_KEY } from "services/localStorage/keys";
+import useNotification, { ERROR_NOTIFICATION_TYPE } from "services/notifications";
+
+const ZIP_REGEX = /^\d{5}$/;
 
 export enum EUnitOfMeasure {
   FARENHEIT = "F",
   CELSIUS = "C",
 }
 
+interface ILocalStorageUnitState {
+  unit: string;
+}
+
+interface ILocalStorageZipState {
+  zip: string;
+}
+
+const loadUnit = (): string => {
+  const data: ILocalStorageUnitState | undefined = loadState(UNIT_KEY) as ILocalStorageUnitState | undefined;
+  if (data && data.unit) {
+    return data.unit;
+  }
+  return "";
+};
+
+const loadZip = (): string => {
+  const data: ILocalStorageZipState | undefined = loadState(ZIP_KEY) as ILocalStorageZipState | undefined;
+  if (data && data.zip) {
+    return data.zip;
+  }
+  return "";
+};
+
 export interface IWeatherContext {
-  fetchWeather?: (zipCode: string) => Promise<void>;
+  clear?: () => void;
   isLoading: boolean;
   unit: EUnitOfMeasure;
-  setUnit?: React.Dispatch<React.SetStateAction<EUnitOfMeasure>>;
+  setUnit?: (unit: EUnitOfMeasure) => void;
+  setZip?: (zipCode: string) => void;
   weather: IWeatherResponse | null;
   zip: string;
 }
@@ -32,26 +69,73 @@ interface IWeatherProviderProps {
 }
 
 const WeatherProvider: React.FunctionComponent<IWeatherProviderProps> = ({ children }) => {
-  const [unit, setUnit] = React.useState<EUnitOfMeasure>(EUnitOfMeasure.FARENHEIT);
-  const [zip, setZip] = React.useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [initialized, setInitialized] = React.useState<boolean>(false);
+  const [unit, setUnit] = React.useState<EUnitOfMeasure>((loadUnit() as EUnitOfMeasure) || EUnitOfMeasure.FARENHEIT);
+  const [zip, setZip] = React.useState<string>(searchParams.get("zip") || loadZip());
+
   const weatherHook: IUseWeather = useWeather();
+  const notificationHook = useNotification();
 
   const fetchWeather = async (zipCode: string): Promise<void> => {
-    if (zipCode !== zip) {
-      setZip(zipCode);
-      await weatherHook.fetchWeather(zipCode);
+    const success = await weatherHook.fetchWeather(zipCode);
+    if (success) {
+      saveState(ZIP_KEY, { zip: zipCode });
+      setSearchParams({ zip: zipCode });
+    } else {
+      notificationHook.enqueue(STRINGS.ERROR_FETCH, ERROR_NOTIFICATION_TYPE);
     }
+  };
+
+  // Only fetch after first load.
+  const didMount = React.useRef<boolean | null>(false);
+  React.useEffect(() => {
+    if (didMount.current) {
+      zip && fetchWeather(zip);
+    } else {
+      setInitialized(true);
+      didMount.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zip]);
+
+  /**
+   * The user can attempt to tell the provider to service a new zip code. Provider can decide if it's OK.
+   *
+   * @param zipCode The new Zip Code.
+   */
+  const handleZipChange = async (zipCode: string): Promise<void> => {
+    if (zipCode === zip && !weatherHook.zip) {
+      notificationHook.enqueue(STRINGS.ERROR_FETCH, ERROR_NOTIFICATION_TYPE);
+    }
+    if (zipCode !== weatherHook.zip && ZIP_REGEX.test(zipCode)) {
+      setZip(zipCode);
+    }
+  };
+
+  const handleClear = (): void => {
+    removeState(ZIP_KEY);
+    setSearchParams({});
+    setZip("");
+    weatherHook.clear();
+  };
+
+  const handleUnitChange = (unit: EUnitOfMeasure): void => {
+    setUnit(unit);
+    saveState(UNIT_KEY, { unit: unit });
   };
 
   return (
     <WeatherContext.Provider
       value={{
-        fetchWeather,
-        isLoading: weatherHook.isLoading,
-        setUnit,
+        clear: handleClear,
+        isLoading: weatherHook.isLoading || !initialized,
+        setUnit: handleUnitChange,
+        setZip: handleZipChange,
         unit: unit,
         weather: weatherHook.weather,
-        zip: zip,
+        zip: weatherHook.zip,
       }}
     >
       {children}

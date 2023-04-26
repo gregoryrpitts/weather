@@ -7,13 +7,11 @@ import WeatherPage from "pages/WeatherPage";
 
 const Layout: React.FunctionComponent = () => {
   return (
-    <React.Fragment>
-      <Navbar>
-        <PageWrapper>
-          <WeatherPage />
-        </PageWrapper>
-      </Navbar>
-    </React.Fragment>
+    <Navbar>
+      <PageWrapper>
+        <WeatherPage />
+      </PageWrapper>
+    </Navbar>
   );
 };
 

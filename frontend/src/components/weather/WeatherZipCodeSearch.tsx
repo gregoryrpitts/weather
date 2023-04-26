@@ -25,7 +25,7 @@ const WeatherZipCodeSearch: React.FunctionComponent = () => {
   const [allowSearch, setAllowSearch] = React.useState<boolean>(false);
 
   const handleOnSearch = async () => {
-    weatherProvider.fetchWeather && (await weatherProvider.fetchWeather(zipCode.toString()));
+    weatherProvider.setZip && weatherProvider.setZip(zipCode.toString());
   };
 
   const handleEnterPressed = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -62,6 +62,7 @@ const WeatherZipCodeSearch: React.FunctionComponent = () => {
       onKeyDown={handleEnterPressed}
       placeholder={STRINGS.SEARCH_BY_ZIP}
       type={"text"}
+      value={zipCode}
     />
   );
 };

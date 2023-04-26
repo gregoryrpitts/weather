@@ -2,10 +2,12 @@ import React from "react";
 import clsx from "clsx";
 import Grid from "@mui/material/Grid";
 
-import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
+import IconButton from "@mui/material/IconButton";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Tooltip from "@mui/material/Tooltip";
+import Share from "@mui/icons-material/Share";
 
 import { WeatherReport } from "components/weather";
 import WeatherZipCodeSearch from "components/weather/WeatherZipCodeSearch";
@@ -21,6 +23,27 @@ import { IWeatherContext } from "providers/WeatherProvider";
 import Typography from "widgets/Typography";
 
 import "./styles.css";
+
+const TOOLTIP_DELAY = 1000;
+
+const ShareIcon = () => {
+  const [tooltipOpen, setTooltipOpen] = React.useState<boolean>(false);
+
+  const handleClick = () => {
+    navigator.clipboard.writeText(window.location.toString());
+    setTooltipOpen(true);
+    setTimeout(() => {
+      setTooltipOpen(false);
+    }, TOOLTIP_DELAY);
+  };
+  return (
+    <Tooltip arrow open={tooltipOpen} title={STRINGS.COPIED} placement={"right-end"}>
+      <IconButton aria-label="share weather" size={"large"} onClick={handleClick}>
+        <Share fontSize="inherit" />
+      </IconButton>
+    </Tooltip>
+  );
+};
 
 const UnitToggle: React.FunctionComponent = (): React.ReactElement => {
   const weatherProvider: IWeatherContext = useWeatherProvider();
@@ -49,18 +72,10 @@ const WeatherReportTitle = () => {
 const WeatherPage: React.FunctionComponent = () => {
   const weatherProvider: IWeatherContext = useWeatherProvider();
 
-  if (weatherProvider.isLoading) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "100px" }}>
-        <CircularProgress disableShrink />
-      </div>
-    );
-  }
-
   return (
     <Container maxWidth={"md"}>
       <Grid container alignItems={"center"} justifyContent={"center"} direction={"column"} flexGrow={1} spacing={1}>
-        {!weatherProvider.weather ? (
+        {!weatherProvider.weather && (
           <Grid item>
             <Grid container direction={"column"} alignItems={"center"} justifyContent={"center"} spacing={2}>
               <Grid item>
@@ -74,15 +89,19 @@ const WeatherPage: React.FunctionComponent = () => {
               </Grid>
             </Grid>
           </Grid>
-        ) : (
+        )}
+        {weatherProvider.weather && (
           <Grid item style={{ width: "100%" }}>
-            <Grid container direction={"row"}>
+            <Grid container direction={"row"} alignItems={"center"} spacing={1}>
               <Grid item>
                 <WeatherReportTitle />
               </Grid>
               <Grid item xs />
               <Grid item>
                 <UnitToggle />
+              </Grid>
+              <Grid item xs={1}>
+                <ShareIcon />
               </Grid>
             </Grid>
             <WeatherReport />

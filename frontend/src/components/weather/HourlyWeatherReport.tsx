@@ -71,7 +71,7 @@ const HourlyWeatherReport: React.FunctionComponent = (): React.ReactElement | nu
       {weatherProvider.weather.map((hourlyWeather: IWeatherByHour, index: number) => {
         const hourlyStartTime = DateTime.fromISO(hourlyWeather.startTime, { setZone: true });
         return (
-          <React.Fragment>
+          <React.Fragment key={`${hourlyWeather.startTime}`}>
             {isRolloverHour(comparisionString, hourlyStartTime) && <DateRow date={hourlyStartTime} />}
             <Grid item={true} className={clsx({ [EGridClasses.outlined]: true, [EGridClasses.alternate]: index % 2 })}>
               <HourlyWeatherTile weather={hourlyWeather} />

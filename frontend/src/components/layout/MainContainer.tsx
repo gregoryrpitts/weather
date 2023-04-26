@@ -15,7 +15,6 @@ const MainContainer: React.FunctionComponent<IMainContainerProps> = ({ children 
         flexGrow: 1,
         minHeight: "100vh",
         overflow: "auto",
-        border: "1px dashed red",
       }}
     >
       {children}

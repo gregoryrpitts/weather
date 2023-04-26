@@ -7,6 +7,8 @@
 
 const strings = {
   APP_TITLE: "Weather",
+  COPIED: "Copied!",
+  ERROR_FETCH: "Error fetching weather data.",
   SEARCH_BY_ZIP: "Search by Zip",
   SEARCH: "Search",
   WEATHER_REPORT_TITLE: "Hourly Weather Forecast",
