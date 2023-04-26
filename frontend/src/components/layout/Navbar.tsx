@@ -2,18 +2,13 @@ import * as React from "react";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Search from "@mui/icons-material/Search";
 import Toolbar from "@mui/material/Toolbar";
 
 import MainContainer from "components/layout/MainContainer";
 import StickyFooter from "components/layout/StickyFooter";
+import WeatherZipCodeSearch from "components/weather/WeatherZipCodeSearch";
 
 import STRINGS from "constants/strings";
-
-import Input from "widgets/Input";
-import { EInputClasses } from "widgets/Input";
 
 import Typography from "widgets/Typography";
 import { ETypographyClasses } from "widgets/Typography";
@@ -29,22 +24,9 @@ const Navbar: React.FunctionComponent<INavbarProps> = ({ children }) => {
         <AppBar position={"absolute"}>
           <Toolbar>
             <Typography className={ETypographyClasses.link} variant={"h6"} sx={{ flexGrow: 1 }}>
-              {"Weather"}
+              {STRINGS.APP_TITLE}
             </Typography>
-            <Input
-              autoComplete="off"
-              className={EInputClasses.search}
-              disableUnderline
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton aria-label="search for weather by zip" edge="end">
-                    <Search />
-                  </IconButton>
-                </InputAdornment>
-              }
-              placeholder={STRINGS.SEARCH_BY_ZIP}
-              type={"text"}
-            />
+            <WeatherZipCodeSearch />
           </Toolbar>
         </AppBar>
 

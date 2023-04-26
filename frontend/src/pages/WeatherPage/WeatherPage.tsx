@@ -2,9 +2,8 @@ import React from "react";
 import clsx from "clsx";
 import Grid from "@mui/material/Grid";
 
+import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
@@ -15,53 +14,78 @@ import STRINGS from "constants/strings";
 import { StyledSunIcon } from "icons";
 import { EIconClasses } from "icons";
 
-import { IUseWeather } from "services/weather";
-import useWeather from "services/weather";
+import { useWeatherProvider } from "providers/WeatherProvider";
+import { EUnitOfMeasure } from "providers/WeatherProvider";
+import { IWeatherContext } from "providers/WeatherProvider";
 
 import Typography from "widgets/Typography";
 
 import "./styles.css";
 
+const UnitToggle: React.FunctionComponent = (): React.ReactElement => {
+  const weatherProvider: IWeatherContext = useWeatherProvider();
+
+  const handleAlignment = (_event: React.MouseEvent<HTMLElement>, newAlignment: EUnitOfMeasure) => {
+    weatherProvider.setUnit && weatherProvider.setUnit(newAlignment);
+  };
+
+  return (
+    <ToggleButtonGroup value={weatherProvider.unit} exclusive onChange={handleAlignment} aria-label="text alignment">
+      <ToggleButton value={EUnitOfMeasure.FARENHEIT} aria-label="left aligned">
+        <Typography variant={"h6"}>{"°F"}</Typography>
+      </ToggleButton>
+      <ToggleButton value={EUnitOfMeasure.CELSIUS} aria-label="centered">
+        <Typography variant={"h6"}>{"°C"}</Typography>
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+};
+
+const WeatherReportTitle = () => {
+  const weatherProvider: IWeatherContext = useWeatherProvider();
+  return <Typography variant={"h4"}>{`${STRINGS.WEATHER_REPORT_TITLE} ${weatherProvider.zip && "(" + weatherProvider.zip + ")"}`}</Typography>;
+};
+
 const WeatherPage: React.FunctionComponent = () => {
-  const weatherHook: IUseWeather = useWeather();
-  const [alignment, setAlignment] = React.useState<string | null>("left");
+  const weatherProvider: IWeatherContext = useWeatherProvider();
 
-  const handleOnSearch = async (zipCode: string): Promise<void> => {
-    await weatherHook.fetchWeather(zipCode);
-  };
-
-  const handleAlignment = (event: React.MouseEvent<HTMLElement>, newAlignment: string | null) => {
-    setAlignment(newAlignment);
-  };
+  if (weatherProvider.isLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "100px" }}>
+        <CircularProgress disableShrink />
+      </div>
+    );
+  }
 
   return (
     <Container maxWidth={"md"}>
       <Grid container alignItems={"center"} justifyContent={"center"} direction={"column"} flexGrow={1} spacing={1}>
-        {!weatherHook.weather ? (
+        {!weatherProvider.weather ? (
           <Grid item>
-            <StyledSunIcon className={clsx(EIconClasses.title, "App-logo")} />
-            <Typography variant={"body1"}>{STRINGS.WELCOME_MESSAGE}</Typography>
-            <WeatherZipCodeSearch error={false} loading={weatherHook.isLoading} onSearch={handleOnSearch} />
+            <Grid container direction={"column"} alignItems={"center"} justifyContent={"center"} spacing={2}>
+              <Grid item>
+                <StyledSunIcon className={clsx(EIconClasses.title, "App-logo")} />
+              </Grid>
+              <Grid item>
+                <Typography variant={"h6"}>{STRINGS.WELCOME_MESSAGE}</Typography>
+              </Grid>
+              <Grid item>
+                <WeatherZipCodeSearch />
+              </Grid>
+            </Grid>
           </Grid>
         ) : (
           <Grid item style={{ width: "100%" }}>
             <Grid container direction={"row"}>
               <Grid item>
-                <Typography variant={"h4"}>{`${STRINGS.WEATHER_REPORT_TITLE}`}</Typography>
+                <WeatherReportTitle />
               </Grid>
               <Grid item xs />
               <Grid item>
-                <ToggleButtonGroup value={alignment} exclusive onChange={handleAlignment} aria-label="text alignment">
-                  <ToggleButton value="left" aria-label="left aligned">
-                    <Typography variant={"h6"}>{"°F"}</Typography>
-                  </ToggleButton>
-                  <ToggleButton value="center" aria-label="centered">
-                    <Typography variant={"h6"}>{"°C"}</Typography>
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                <UnitToggle />
               </Grid>
             </Grid>
-            <WeatherReport weather={weatherHook.weather || []} />
+            <WeatherReport />
           </Grid>
         )}
       </Grid>

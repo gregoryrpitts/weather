@@ -7,66 +7,61 @@ import React from "react";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import Search from "@mui/icons-material/Search";
+
 import STRINGS from "constants/strings";
+
+import { useWeatherProvider } from "providers/WeatherProvider";
+import { IWeatherContext } from "providers/WeatherProvider";
+
 import Input from "widgets/Input";
 import { EInputClasses } from "widgets/Input";
 
-interface IWeatherZipCodeSearchProps {
-  /**
-   * @description Whether or not there was an error
-   */
-  error?: boolean;
-  /**
-   * @description The error message to display
-   */
-  errorMessage?: string;
-  /**
-   * @description Whether or not the component is loading
-   */
-  loading: boolean;
-  /**
-   * @description Callback for when the User wants to search for a Zip Code.
-   *
-   * @param zipCode The Zip Code to pass to the search callback.
-   * @returns void
-   */
-  onSearch: (zipCode: string) => void;
-}
+const ZIP_REGEX = /^\d{5}$/;
 
-const WeatherZipCodeSearch: React.FunctionComponent<IWeatherZipCodeSearchProps> = ({ error, errorMessage, loading, onSearch }) => {
+const WeatherZipCodeSearch: React.FunctionComponent = () => {
+  const weatherProvider: IWeatherContext = useWeatherProvider();
+
   const [zipCode, setZipCode] = React.useState<number | string>("");
-  const [localError, setLocalError] = React.useState<boolean>(false);
+  const [allowSearch, setAllowSearch] = React.useState<boolean>(false);
 
   const handleOnSearch = async () => {
-    onSearch && onSearch(zipCode.toString(0));
+    weatherProvider.fetchWeather && (await weatherProvider.fetchWeather(zipCode.toString()));
+  };
+
+  const handleEnterPressed = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      await handleOnSearch();
+    }
   };
 
   const handleZipCodeChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setZipCode(e.target.value);
-    setLocalError(false);
-  };
+    if (ZIP_REGEX.test(e.target.value)) {
+      setAllowSearch(true);
+    } else {
+      setAllowSearch(false);
+    }
 
-  React.useEffect(() => {
-    setLocalError(error || false);
-  }, [error]);
+    setZipCode(e.target.value);
+  };
 
   return (
     <Input
       autoComplete="off"
       className={EInputClasses.search}
+      disabled={weatherProvider.isLoading}
       disableUnderline
       endAdornment={
         <InputAdornment position="end">
-          <IconButton aria-label="search for weather by zip" disabled={loading} onClick={handleOnSearch} edge="end">
+          <IconButton aria-label="search for weather by zip" disabled={weatherProvider.isLoading || !allowSearch} onClick={handleOnSearch} edge="end">
             <Search />
           </IconButton>
         </InputAdornment>
       }
-      error={localError}
+      inputMode="numeric"
       onChange={handleZipCodeChanged}
+      onKeyDown={handleEnterPressed}
       placeholder={STRINGS.SEARCH_BY_ZIP}
       type={"text"}
-      value={zipCode}
     />
   );
 };

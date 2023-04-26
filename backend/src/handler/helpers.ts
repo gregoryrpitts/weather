@@ -25,5 +25,5 @@ export const pruneData = (data: IForecastResponse): IForecastPeriod[] => {
         windDirection: period.windDirection,
       };
     })
-    .slice(0, 18);
+    .slice(0, 24);
 };
