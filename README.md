@@ -22,6 +22,13 @@ npm i
 npm run start
 ```
 
+Optionally, for backend and frontend, you can just run all the things...
+```
+cd <ROOT_DIR>/frontend
+npm i
+npm run test && npm run lint && npm run start
+```
+
 Note: You can reset the localStorage and URL params by clicking the "Weather App" string in the NavBar.
 
 # Thought process:
@@ -48,6 +55,8 @@ If I were to implement this, I might do something like:
 - Only require a single external API request to service weather for cached values.
 
 Another improvement would be to add some kind of error logging to the backend. Since we have three API requests, we have a lot of opportunity for failure. Right now, we mask all the error conditions from the user by only returning `404` or `500` but server side we would want to be notified of any errors along with parameter data and what the external server respons was. This is easily accomplished with server logs, a more advanced solution would be to integrate with an external logging service like `DataDog`.
+
+Also, the frontend error handling isn't great. I'm not varying the response error message based on the backend error, so the user cannot know WHY an error is occurring. They only know the request was bad, and that they need to try again. So if you try an invalid zip code (00000) you get a very generic message "Error fetching weather data." and it should be something like "Invalid zip code. Please try again". From the frontend side, I think this is probably the most necessary to improve. however, with MapBox API I can't tell if the API is down or if the zip code is actually a non-valid US 5 digit zip code. So adding this message based on MapBox API failure only could lead to misleading error messages. Doing this properly would require a more research.
 
 A way less important improvement would be to use different weather icons, since NWS are pretty bad. But the requirements seemed to imply we should use those, and changing the icons exposes us to possible errors if the NWS changes their description of any weather state, if we miss a weather state when adding icons, or if they add a state. Just seemed simpler to use the NWS icons.
 

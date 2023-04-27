@@ -9,7 +9,7 @@ const strings = {
   APP_RESET: "You just reset the local storage and search params",
   APP_TITLE: "Weather App",
   COPIED: "Copied Share URL!",
-  ERROR_FETCH: "Error fetching weather data.",
+  ERROR_FETCH: "Error fetching weather data! This is a bad error message, see README.",
   MADE_BY: "Made by",
   SEARCH_BY_ZIP: "Search by Zip",
   SEARCH: "Search",
