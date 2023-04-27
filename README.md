@@ -47,6 +47,8 @@ If I were to implement this, I might do something like:
 - Cache the response from the first NWS request (the weather station code) and the Lat/Long pair in my local database.
 - Only require a single external API request to service weather for cached values.
 
+A way less important improvement would be to use different weather icons, since NWS are pretty bad. But the requirements seemed to imply we should use those, and changing the icons exposes us to possible errors if the NWS changes their description of any weather state, if we miss a weather state when adding icons, or if they add a state. Just seemed simpler to use the NWS icons.
+
 ## Process
 
 My first step after reading the problem statement was to check the [documentation](https://weather-gov.github.io/api/general-faqs) of the National Weather Service API. That's where I learned that you cannot query the API by zip code.
@@ -101,14 +103,14 @@ I'm selecting MapBox. It has 100k free queries and easy, user friendly documenta
 The user should land on a page that doesn't require authentication. There will be a single form that allows them to enter a five digit zip code. When the user hits "Search" or presses enter, we will
 fetch the data and display. Also:
 
-- Create a slider to switch between F/C. UI library component for expediency.
+- Create a toggle to switch between F/C. UI library component for expediency.
 - Store the last searched for zip code, probably in browser local storage since it only need to be read by the client.
 - Share button to copy URL to clipboard. Icon Button that copies to clipboard.
 - Responsive layout for mobile
 
 ## Backend
 
-Bcakend doesn't need a database for this project. We need to store our API key when requesting to the MapBox API and hide that from the frontend. Backend will need the ability to make two requests, one to MapBox and one to NWS.
+Bcakend doesn't need a database for this project. We need to store our API key when requesting to the MapBox API and hide that from the frontend. Backend will need the ability to make three requests, one to MapBox and two to NWS. See improvements section above for my thoughts (regrets) on this.
 
 ## Technology Selection
 
@@ -130,10 +132,16 @@ I did get surprised mid-implemnentation that I needed two NWS API requests. I mi
 
 I went pretty heavy with Test Driven Devleopment in the backend. I'm a big fan of this approach beacuse it helps flesh out corner cases before you encounter them on the frontend, and forces you to understand about the contraints to using the API before you write the frontend.
 
+As a standard, backend/frontend communication will always use UTC time. This lets me display time in the browser as local time relative to the ZIP code being requested, which is how most weather apps work.
+
 ### Frontend
 
 create-react-app with a Typescript template is the starting point. I added Material UI component library because I'm deeply familiar with it and it would allow me to build a responsive design quickly.
 
 The browser remembers the user's location by storing it in local storage. URL parameters will override any local storage state.
 
-I went with a **Provider** pattern to store data in the React Application. I could have driven everything out of one top level component but I wanted to demonstrate some kind of global data management for the assignment. Redux seemed too complex for this small assignment, so a Provider was a nice choice. The weather fetch logic is driven from it's own hook, which abtracts the axios implementation away from the `WeatherProvider`. This makes it easier in case we ever want to change AJAX libraries or if the Backend API signature changes - we can isolate the changes to the `useWeather` hook.
+I went with a **Provider** pattern to store data in the React Application. This project is small and easy enough that we could have driven everything out of one top level component, but I basically just wanted to demonstrate some kind of global data management for the assignment. Redux seemed too far complex for this small assignment. 
+
+The weather fetch logic is driven from it's own hook `useWeather` (`frontend/src/services/weather.ts`), which abstracts the axios implementation away from the `WeatherProvider`. This makes it easier in case we ever want to change AJAX libraries or if the Backend API signature changes - we can isolate the changes to the `useWeather` hook without needed to change any of our Components, so long as we can construct the same object structure as we are starting with. I added a `.test.ts` for the useWeather implenentation.
+
+Backend will always return times in UTC so I used Luxon to help convert to the correct time. Moment is out of date and too large.
