@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { ServerResponse } from "http";
 import * as dotenv from "dotenv";
 
