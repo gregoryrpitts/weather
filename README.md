@@ -47,6 +47,8 @@ If I were to implement this, I might do something like:
 - Cache the response from the first NWS request (the weather station code) and the Lat/Long pair in my local database.
 - Only require a single external API request to service weather for cached values.
 
+Another improvement would be to add some kind of error logging to the backend. Since we have three API requests, we have a lot of opportunity for failure. Right now, we mask all the error conditions from the user by only returning `404` or `500` but server side we would want to be notified of any errors along with parameter data and what the external server respons was. This is easily accomplished with server logs, a more advanced solution would be to integrate with an external logging service like `DataDog`.
+
 A way less important improvement would be to use different weather icons, since NWS are pretty bad. But the requirements seemed to imply we should use those, and changing the icons exposes us to possible errors if the NWS changes their description of any weather state, if we miss a weather state when adding icons, or if they add a state. Just seemed simpler to use the NWS icons.
 
 ## Process
