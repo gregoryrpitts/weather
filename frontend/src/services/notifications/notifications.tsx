@@ -8,6 +8,7 @@ export const ERROR_NOTIFICATION_TYPE = "error";
 export const INFO_NOTIFICATION_TYPE = "info";
 export const SUCCESS_NOTIFICATION_TYPE = "success";
 export const WARNING_NOTIFICATION_TYPE = "warning";
+const AUTOHIDE_DURATION = 5000;
 
 export interface IUseNotification {
   close: (key?: SnackbarKey | undefined) => void;
@@ -37,7 +38,7 @@ const useNotification = (): IUseNotification => {
   const enqueue = (msg: string, variant: VariantType): SnackbarKey => {
     return enqueueSnackbar(msg, {
       variant: variant,
-      autoHideDuration: 5000,
+      autoHideDuration: AUTOHIDE_DURATION,
       action,
       anchorOrigin: {
         horizontal: "right",

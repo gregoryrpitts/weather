@@ -17,7 +17,6 @@ export const loadState = (key: string): object | undefined => {
     return JSON.parse(serializedState);
   } catch (err: unknown) {
     // TODO: Better error logging
-
     return undefined;
   }
 };

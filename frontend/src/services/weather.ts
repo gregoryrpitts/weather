@@ -44,12 +44,10 @@ const useWeather = (): IUseWeather => {
       .getHourlyWeatherForecastByZip(zipCode)
       .then((res): boolean => {
         setWeather((res as any).data);
-        console.log("pass");
         setZip(zipCode);
         return true;
       })
       .catch((_err: Error): boolean => {
-        console.log("fail");
         // TODO: Log error to some external service for debugging (maybe)
         setZip("");
         setWeather(null);

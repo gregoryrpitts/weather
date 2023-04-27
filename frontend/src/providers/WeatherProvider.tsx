@@ -12,7 +12,7 @@ import useWeather from "services/weather";
 import { IWeatherResponse } from "types/weather";
 import { UNIT_KEY } from "services/localStorage/keys";
 import { ZIP_KEY } from "services/localStorage/keys";
-import useNotification, { ERROR_NOTIFICATION_TYPE } from "services/notifications";
+import useNotification, { ERROR_NOTIFICATION_TYPE, INFO_NOTIFICATION_TYPE } from "services/notifications";
 
 const ZIP_REGEX = /^\d{5}$/;
 
@@ -115,10 +115,12 @@ const WeatherProvider: React.FunctionComponent<IWeatherProviderProps> = ({ child
   };
 
   const handleClear = (): void => {
+    removeState(UNIT_KEY);
     removeState(ZIP_KEY);
     setSearchParams({});
     setZip("");
     weatherHook.clear();
+    notificationHook.enqueue(STRINGS.APP_RESET, INFO_NOTIFICATION_TYPE);
   };
 
   const handleUnitChange = (unit: EUnitOfMeasure): void => {

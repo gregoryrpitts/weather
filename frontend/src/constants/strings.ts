@@ -6,8 +6,9 @@
  */
 
 const strings = {
+  APP_RESET: "You just reset the local storage and search params",
   APP_TITLE: "Weather App",
-  COPIED: "Copied!",
+  COPIED: "Copied Share URL!",
   ERROR_FETCH: "Error fetching weather data.",
   SEARCH_BY_ZIP: "Search by Zip",
   SEARCH: "Search",

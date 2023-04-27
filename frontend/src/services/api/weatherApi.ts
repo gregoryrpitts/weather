@@ -6,6 +6,16 @@ import { useAxiosInstance } from "services/api/axiosInstance";
 
 import { IWeatherResponse } from "types/weather";
 
+/**
+ * Make the URL to request weather from.
+ *
+ * @param zipCode The zip code to fetch weather for.
+ * @returns The endpoint string.
+ */
+const getHourlyWeatherForecastByZipEndpointUrl = (zipCode: string): string => {
+  return `/weather?zip=${zipCode}`;
+};
+
 export interface IUseWeatherApi {
   /**
    * Fetches the hourly weather forecast for a given zip code.
@@ -14,10 +24,6 @@ export interface IUseWeatherApi {
    */
   getHourlyWeatherForecastByZip: (zipCode: string) => Promise<IWeatherResponse>;
 }
-
-const getHourlyWeatherForecastByZipEndpointUrl = (zipCode: string): string => {
-  return `/weather?zip=${zipCode}`;
-};
 
 const useWeatherApi = (): IUseWeatherApi => {
   const axiosHook: IUseAxiosInstance = useAxiosInstance();

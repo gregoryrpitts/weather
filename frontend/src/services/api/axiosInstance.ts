@@ -9,6 +9,8 @@ const defaultOptions: CreateAxiosDefaults = {
   },
 };
 
+// In a real application, you could wrap this with a provider and dynamically change
+// the configurations for your axios instance by passing the instance to this hook.
 const axiosInstance: AxiosInstance = axios.create(defaultOptions);
 
 export interface IUseAxiosInstance {

@@ -2,6 +2,10 @@ import * as React from "react";
 import { DateTime } from "luxon";
 import clsx from "clsx";
 
+import { Theme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 import HourlyWeatherTile from "components/weather/HourlyWeatherTile";
 
 import { useWeatherProvider } from "providers/WeatherProvider";
@@ -13,7 +17,7 @@ import Grid from "widgets/Grid";
 import { EGridClasses } from "widgets/Grid";
 import Typography from "widgets/Typography";
 
-const TITLE_ROW_FORMAT = "LLL dd, yyyy";
+const TITLE_ROW_FORMAT = "cccc LLLL dd";
 const COMPARE_FORMAT = "m:dd";
 const ROLLOVER_FORMAT = "h:mm a";
 const ROLLOVER_TIME = "12:00 AM";
@@ -39,6 +43,27 @@ const DateRow: React.FunctionComponent<IDateRowProps> = ({ date }) => {
   );
 };
 
+const HeaderRow: React.FunctionComponent = () => {
+  return (
+    <Grid item className={EGridClasses.outlined}>
+      <Grid container direction={"row"} spacing={2} alignItems={"flex-start"} justifyContent={"flex-start"}>
+        <Grid item xs={2}>
+          {"Time"}
+        </Grid>
+        <Grid item xs={1}>
+          {"Temp"}
+        </Grid>
+        <Grid item xs={7}>
+          {"Forecast"}
+        </Grid>
+        <Grid item xs={2}>
+          {"Wind"}
+        </Grid>
+      </Grid>
+    </Grid>
+  );
+};
+
 /**
  * Check if this DateTime is a rollover hour compared to reference date.
  *
@@ -57,6 +82,9 @@ const isRolloverHour = (startDayCompareString: string, currentDate: DateTime): b
  */
 const HourlyWeatherReport: React.FunctionComponent = (): React.ReactElement | null => {
   const weatherProvider: IWeatherContext = useWeatherProvider();
+  const theme: Theme = useTheme();
+
+  const matches = useMediaQuery(theme.breakpoints.up("sm"));
 
   if (!weatherProvider.weather || weatherProvider.weather.length === 0 || !weatherProvider.weather.at(0)) {
     return null;
@@ -68,6 +96,7 @@ const HourlyWeatherReport: React.FunctionComponent = (): React.ReactElement | nu
   return (
     <Grid container direction={"column"} spacing={1}>
       <DateRow date={titleDateTime} />
+      {matches && <HeaderRow />}
       {weatherProvider.weather.map((hourlyWeather: IWeatherByHour, index: number) => {
         const hourlyStartTime = DateTime.fromISO(hourlyWeather.startTime, { setZone: true });
         return (
